@@ -243,24 +243,24 @@ export default function RoomPage() {
   const myName = isHost ? hName : fName
   const peerName = isHost ? fName : hName
 
-  if (!consented) {
-    return (
-      <div className="min-h-screen w-full bg-gradient-to-br from-rose-100 via-purple-100 to-sky-100 flex items-center justify-center p-4 md:p-8">
-        <div className="text-center max-w-sm md:max-w-md">
-          <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white/70 backdrop-blur rounded-2xl md:rounded-3xl mb-4 md:mb-6 shadow-sm"><span className="text-3xl md:text-4xl">📍</span></div>
-          <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
-            {role === 'host' ? `Share your location with ${fName}` : `${hName} wants to share locations`}
-          </h2>
-          <p className="text-gray-500 text-xs md:text-sm mb-6 md:mb-8">{role === 'host' ? 'Your location will be shared so you can meet up.' : `Share your location to meet up with ${hName}.`}</p>
-          <button onClick={() => setConsented(true)} className="w-full bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500 text-white font-semibold py-3 md:py-3.5 px-6 rounded-xl md:rounded-2xl transition shadow-lg shadow-purple-300/30 mb-3">Share Location</button>
-          <button onClick={() => setStatus('no-gps')} className="w-full bg-white/70 hover:bg-white/90 text-gray-500 font-medium py-3 px-6 rounded-xl md:rounded-2xl transition">Not now</button>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="h-screen w-full relative bg-black overflow-hidden">
+    { !consented && (
+      <div className="fixed inset-0 z-[50] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6 md:p-8 w-full max-w-sm text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white/70 backdrop-blur rounded-2xl md:rounded-3xl mb-4"><span className="text-3xl md:text-4xl">📍</span></div>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
+            {role === 'host' ? `Share your location with ${fName}` : `${hName} wants to share locations`}
+          </h2>
+          <p className="text-gray-500 text-xs md:text-sm mb-4">{role === 'host' ? 'Your location will be shared so you can meet up.' : `Share your location to meet up with ${hName}.`}</p>
+          <div className="flex flex-col gap-3">
+            <button onClick={() => setConsented(true)} className="w-full bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500 text-white font-semibold py-2 md:py-2.5 px-4 rounded-xl md:rounded-2xl transition shadow-lg shadow-purple-300/30">Share Location</button>
+            <button onClick={() => setStatus('no-gps')} className="w-full bg-white/70 hover:bg-white/90 text-gray-500 font-medium py-2 px-4 rounded-xl md:rounded-2xl transition">Not now</button>
+          </div>
+        </div>
+      </div>
+    ) }
       <MapView
         myLocation={myLocation} participants={peerLocation ? [{ id: 'peer', name: peerName, color: isHost ? '#22c55e' : '#f43f5e', location: peerLocation }] : []}
         pois={pois} myName={myName} myColor={isHost ? '#f43f5e' : '#22c55e'}
