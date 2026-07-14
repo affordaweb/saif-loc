@@ -86,6 +86,7 @@ export default function RoomPage() {
   const watchRef = useRef(null)
   const myLocationRef = useRef(null)
   const chatEndRef = useRef(null)
+  const chatInputRef = useRef(null)
   const [myLocation, setMyLocation] = useState(null)
   const [peerLocation, setPeerLocation] = useState(null)
   const [status, setStatus] = useState('initializing')
@@ -130,11 +131,13 @@ export default function RoomPage() {
   }
 
   const sendChat = useCallback((text) => {
-    if (!connRef.current?.open || !text.trim()) return
-    const msg = { type: 'chat', text: text.trim(), name: role === 'host' ? hName : fName, timestamp: Date.now() }
-    connRef.current.send(msg)
-    setMessages((prev) => [...prev, { ...msg, isMe: true }])
-    setChatInput('')
+    if (!text.trim() || !connRef.current) return
+    try {
+      const msg = { type: 'chat', text: text.trim(), name: role === 'host' ? hName : fName, timestamp: Date.now() }
+      connRef.current.send(msg)
+      setMessages((prev) => [...prev, { ...msg, isMe: true }])
+      setChatInput('')
+    } catch {}
   }, [role, hName, fName])
 
   useEffect(() => {
@@ -364,10 +367,12 @@ export default function RoomPage() {
             </div>
             <form onSubmit={(e) => { e.preventDefault(); sendChat(chatInput) }} className="flex gap-2">
               <input
+                ref={chatInputRef}
                 type="text"
                 placeholder="Type a message..."
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
+                autoFocus
                 className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
               />
               <button
