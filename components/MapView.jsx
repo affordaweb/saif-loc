@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 
 const POI_ICONS = {
@@ -26,7 +26,24 @@ function avatarIcon(name, color) {
   })
 }
 
-export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, myColor, peerColor, pois, myName, peerName }) {
+function midpointIcon() {
+  return L.divIcon({
+    html: `<div style="width:32px;height:32px;background:gold;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 10px rgba(0,0,0,0.4);">⭐</div>`,
+    className: '', iconSize: [32, 32], iconAnchor: [16, 16],
+  })
+}
+
+function meetingPinIcon(emoji = '📍') {
+  return L.divIcon({
+    html: `<div style="width:36px;height:36px;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);border:2px solid #f59e0b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 10px rgba(0,0,0,0.4);transform:rotate(0);">${emoji}</div>`,
+    className: '', iconSize: [36, 36], iconAnchor: [18, 18],
+  })
+}
+
+export default function MapView({
+  myLocation, peerLocation, myLabel, peerLabel, myColor, peerColor,
+  pois, myName, peerName, trail, midpoint, meetingPin, onMapClick,
+}) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const initializedRef = useRef(false)
@@ -35,16 +52,18 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
   const myCircleRef = useRef(null)
   const lineRef = useRef(null)
   const poiLayerRef = useRef(null)
+  const trailRef = useRef(null)
+  const midpointRef = useRef(null)
+  const meetingPinRef = useRef(null)
+  const clickHandlerRef = useRef(null)
   const styleRef = useRef(null)
 
-  // Init map immediately on mount
   useEffect(() => {
-    if (initializedRef.current || !containerRef.current) return
+    if (initializedRef.current) return
     initializedRef.current = true
 
     const map = L.map(containerRef.current, {
-      zoomControl: false,
-      attributionControl: false,
+      zoomControl: false, attributionControl: false,
     }).setView([20, 0], 2)
 
     L.tileLayer(
@@ -52,17 +71,27 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
       { maxZoom: 19 }
     ).addTo(map)
 
+    map.on('click', (e) => {
+      if (onMapClick) onMapClick(e.latlng)
+    })
+
     mapRef.current = map
     map.invalidateSize()
 
-    return () => {
-      map.remove()
-      mapRef.current = null
-      initializedRef.current = false
-    }
+    return () => { map.remove(); mapRef.current = null; initializedRef.current = false }
   }, [])
 
-  // Inject pulsing animation CSS
+  // Update map click handler reference
+  useEffect(() => {
+    clickHandlerRef.current = onMapClick
+    if (mapRef.current) {
+      mapRef.current.off('click')
+      mapRef.current.on('click', (e) => {
+        if (clickHandlerRef.current) clickHandlerRef.current(e.latlng)
+      })
+    }
+  }, [onMapClick])
+
   useEffect(() => {
     if (styleRef.current) return
     styleRef.current = document.createElement('style')
@@ -78,25 +107,20 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
     return () => { if (styleRef.current) styleRef.current.remove() }
   }, [])
 
-  // Pan to myLocation when it arrives
+  // My marker
   useEffect(() => {
     const map = mapRef.current
     if (!map || !myLocation) return
-
     const latlng = [myLocation.lat, myLocation.lng]
 
-    if (!myLocation) return
-
-    if (myMarkerRef.current) {
-      myMarkerRef.current.setLatLng(latlng)
-    } else {
+    if (myMarkerRef.current) myMarkerRef.current.setLatLng(latlng)
+    else {
       const icon = avatarIcon(myName, myColor)
       myMarkerRef.current = L.marker(latlng, { icon, zIndexOffset: 1000 }).addTo(map)
     }
 
-    if (myCircleRef.current) {
-      myCircleRef.current.setLatLng(latlng)
-    } else if (myLocation.accuracy) {
+    if (myCircleRef.current) myCircleRef.current.setLatLng(latlng)
+    else if (myLocation.accuracy) {
       myCircleRef.current = L.circle(latlng, {
         radius: myLocation.accuracy, color: myColor, fillColor: myColor,
         fillOpacity: 0.08, weight: 1.5, opacity: 0.4,
@@ -104,35 +128,29 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
     }
 
     if (peerLocation) {
-      const peerLatlng = [peerLocation.lat, peerLocation.lng]
-      const bounds = L.latLngBounds(latlng, peerLatlng)
-      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 16 })
-    } else {
-      map.setView(latlng, 15)
-    }
+      const b = L.latLngBounds(latlng, [peerLocation.lat, peerLocation.lng])
+      map.fitBounds(b, { padding: [70, 70], maxZoom: 16 })
+    } else map.setView(latlng, 15)
   }, [myLocation, myColor, myName, peerLocation])
 
+  // Peer marker + line
   useEffect(() => {
     const map = mapRef.current
     if (!map || !peerLocation) return
-
     const latlng = [peerLocation.lat, peerLocation.lng]
 
-    if (peerMarkerRef.current) {
-      peerMarkerRef.current.setLatLng(latlng)
-    } else {
+    if (peerMarkerRef.current) peerMarkerRef.current.setLatLng(latlng)
+    else {
       const icon = avatarIcon(peerName, peerColor)
       peerMarkerRef.current = L.marker(latlng, { icon, zIndexOffset: 999 }).addTo(map)
     }
 
     if (myLocation) {
       const myLatlng = [myLocation.lat, myLocation.lng]
-      const bounds = L.latLngBounds(myLatlng, latlng)
-      map.fitBounds(bounds, { padding: [70, 70], maxZoom: 16 })
-
-      if (lineRef.current) {
-        lineRef.current.setLatLngs([myLatlng, latlng])
-      } else {
+      const b = L.latLngBounds(myLatlng, latlng)
+      map.fitBounds(b, { padding: [70, 70], maxZoom: 16 })
+      if (lineRef.current) lineRef.current.setLatLngs([myLatlng, latlng])
+      else {
         lineRef.current = L.polyline([myLatlng, latlng], {
           color: '#ffffff', weight: 2, opacity: 0.5, dashArray: '8, 8',
         }).addTo(map)
@@ -140,20 +158,53 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
     }
   }, [peerLocation, peerColor, peerName, myLocation])
 
+  // POIs
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
-
     if (poiLayerRef.current) poiLayerRef.current.clearLayers()
     else poiLayerRef.current = L.layerGroup().addTo(map)
-
     if (!pois || pois.length === 0) return
-
     pois.forEach((poi) => {
-      const icon = poiLabelIcon(poi.type, poi.name)
-      L.marker([poi.lat, poi.lng], { icon }).addTo(poiLayerRef.current)
+      L.marker([poi.lat, poi.lng], { icon: poiLabelIcon(poi.type, poi.name) }).addTo(poiLayerRef.current)
     })
   }, [pois])
+
+  // Trail
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    if (trailRef.current) trailRef.current.setLatLngs(trail || [])
+    else if (trail && trail.length > 1) {
+      trailRef.current = L.polyline(trail.map(t => [t.lat, t.lng]), {
+        color: myColor, weight: 3, opacity: 0.4, dashArray: '6, 8',
+      }).addTo(map)
+    }
+  }, [trail, myColor])
+
+  // Midpoint
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    if (midpointRef.current) { map.removeLayer(midpointRef.current); midpointRef.current = null }
+    if (midpoint) {
+      midpointRef.current = L.marker([midpoint.lat, midpoint.lng], {
+        icon: midpointIcon(), zIndexOffset: 1100,
+      }).addTo(map).bindPopup('⭐ Meeting midpoint')
+    }
+  }, [midpoint])
+
+  // Meeting pin
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    if (meetingPinRef.current) { map.removeLayer(meetingPinRef.current); meetingPinRef.current = null }
+    if (meetingPin) {
+      meetingPinRef.current = L.marker([meetingPin.lat, meetingPin.lng], {
+        icon: meetingPinIcon(), zIndexOffset: 1100,
+      }).addTo(map).bindPopup(`📍 Meeting spot`)
+    }
+  }, [meetingPin])
 
   return <div ref={containerRef} className="w-full h-full" />
 }
