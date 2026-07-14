@@ -20,8 +20,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📍</text></svg>" />
-        <link rel="apple-touch-icon" href="https://ui-avatars.com/api/?name=SL&background=a78bfa&color=fff&size=180&rounded=true&bold=true" />
+        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='20' r='12' fill='%23f44336'/%3E%3Cpath d='M32 44 L20 58 L32 50 L44 58 Z' fill='%23f44336'/%3E%3C/svg%3E" />
+        <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='20' r='12' fill='%23f44336'/%3E%3Cpath d='M32 44 L20 58 L32 50 L44 58 Z' fill='%23f44336'/%3E%3C/svg%3E" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
