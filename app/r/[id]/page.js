@@ -34,6 +34,7 @@ export default function RoomPage() {
   const peerRef = useRef(null)
   const connRef = useRef(null)
   const watchRef = useRef(null)
+  const myLocationRef = useRef(null)
   const [myLocation, setMyLocation] = useState(null)
   const [peerLocation, setPeerLocation] = useState(null)
   const [status, setStatus] = useState('initializing')
@@ -44,7 +45,14 @@ export default function RoomPage() {
     ? `${window.location.origin}/r/${roomId}`
     : ''
 
-  const startWatching = useCallback((conn) => {
+  const sendLocation = useCallback((loc) => {
+    if (connRef.current?.open) {
+      connRef.current.send({ type: 'location', location: loc })
+    }
+  }, [])
+
+  // Start watching location immediately on mount, regardless of connection
+  useEffect(() => {
     if (!navigator.geolocation) {
       setStatus('no-gps')
       return
@@ -56,13 +64,9 @@ export default function RoomPage() {
         lng: pos.coords.longitude,
         accuracy: pos.coords.accuracy || 50,
       }
-      setMyLocation((prev) => {
-        if (prev && prev.lat === loc.lat && prev.lng === loc.lng) return prev
-        return loc
-      })
-      if (conn?.open) {
-        conn.send({ type: 'location', location: loc })
-      }
+      myLocationRef.current = loc
+      setMyLocation(loc)
+      sendLocation(loc)
     }
 
     const err = () => {
@@ -79,7 +83,11 @@ export default function RoomPage() {
       maximumAge: 1000,
       timeout: 5000,
     })
-  }, [])
+
+    return () => {
+      if (watchRef.current) navigator.geolocation.clearWatch(watchRef.current)
+    }
+  }, [sendLocation])
 
   useEffect(() => {
     let destroyed = false
@@ -110,7 +118,10 @@ export default function RoomPage() {
           setPeerLocation(null)
         })
 
-        startWatching(conn)
+        // Send current location immediately if we already have it
+        if (myLocationRef.current) {
+          conn.send({ type: 'location', location: myLocationRef.current })
+        }
       })
 
       hostPeer.on('error', (err) => {
@@ -151,7 +162,10 @@ export default function RoomPage() {
             setPeerLocation(null)
           })
 
-          startWatching(conn)
+          // Send current location immediately if we already have it
+          if (myLocationRef.current) {
+            conn.send({ type: 'location', location: myLocationRef.current })
+          }
         })
 
         conn.on('error', () => {
@@ -168,10 +182,9 @@ export default function RoomPage() {
 
     return () => {
       destroyed = true
-      if (watchRef.current) navigator.geolocation.clearWatch(watchRef.current)
       if (peerRef.current) peerRef.current.destroy()
     }
-  }, [roomId, startWatching])
+  }, [roomId, sendLocation])
 
   const s = STATUS[status] || STATUS.error
 
