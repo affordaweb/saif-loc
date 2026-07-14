@@ -199,7 +199,7 @@ export default function RoomPage() {
         connRef.current = conn
         setStatus('connected')
         conn.on('data', handleData)
-        conn.on('close', () => { setStatus('disconnected'); setPeerLocation(null) })
+        conn.on('close', () => { setStatus('disconnected') })
         if (myLocationRef.current) conn.send({ type: 'location', location: myLocationRef.current })
       })
 
@@ -224,7 +224,7 @@ export default function RoomPage() {
           if (destroyed) return
           setStatus('connected')
           conn.on('data', handleData)
-          conn.on('close', () => { setStatus('disconnected'); setPeerLocation(null) })
+          conn.on('close', () => { setStatus('disconnected') })
           if (myLocationRef.current) conn.send({ type: 'location', location: myLocationRef.current })
         })
         conn.on('error', () => setStatus('error'))
