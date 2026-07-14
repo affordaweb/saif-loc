@@ -245,15 +245,15 @@ export default function RoomPage() {
 
   if (!consented) {
     return (
-      <div className="h-screen w-full bg-gradient-to-br from-rose-100 via-purple-100 to-sky-100 flex items-center justify-center p-6">
-        <div className="text-center max-w-sm">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/70 backdrop-blur rounded-3xl mb-6 shadow-sm"><span className="text-4xl">📍</span></div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+      <div className="min-h-screen w-full bg-gradient-to-br from-rose-100 via-purple-100 to-sky-100 flex items-center justify-center p-4 md:p-8">
+        <div className="text-center max-w-sm md:max-w-md">
+          <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white/70 backdrop-blur rounded-2xl md:rounded-3xl mb-4 md:mb-6 shadow-sm"><span className="text-3xl md:text-4xl">📍</span></div>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
             {role === 'host' ? `Share your location with ${fName}` : `${hName} wants to share locations`}
           </h2>
-          <p className="text-gray-500 text-sm mb-8">{role === 'host' ? 'Your location will be shared so you can meet up.' : `Share your location to meet up with ${hName}.`}</p>
-          <button onClick={() => setConsented(true)} className="w-full bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500 text-white font-semibold py-3.5 px-6 rounded-2xl transition shadow-lg shadow-purple-300/30 mb-3">Share Location</button>
-          <button onClick={() => setStatus('no-gps')} className="w-full bg-white/70 hover:bg-white/90 text-gray-500 font-medium py-3 px-6 rounded-2xl transition">Not now</button>
+          <p className="text-gray-500 text-xs md:text-sm mb-6 md:mb-8">{role === 'host' ? 'Your location will be shared so you can meet up.' : `Share your location to meet up with ${hName}.`}</p>
+          <button onClick={() => setConsented(true)} className="w-full bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500 text-white font-semibold py-3 md:py-3.5 px-6 rounded-xl md:rounded-2xl transition shadow-lg shadow-purple-300/30 mb-3">Share Location</button>
+          <button onClick={() => setStatus('no-gps')} className="w-full bg-white/70 hover:bg-white/90 text-gray-500 font-medium py-3 px-6 rounded-xl md:rounded-2xl transition">Not now</button>
         </div>
       </div>
     )
@@ -262,23 +262,22 @@ export default function RoomPage() {
   return (
     <div className="h-screen w-full relative bg-black overflow-hidden">
       <MapView
-        myLocation={myLocation} peerLocation={peerLocation} pois={pois}
-        myLabel={myName.charAt(0).toUpperCase()} peerLabel={peerName.charAt(0).toUpperCase()}
-        myColor={isHost ? '#f43f5e' : '#22c55e'} peerColor={isHost ? '#22c55e' : '#f43f5e'}
-        myName={myName} peerName={peerName} trail={trail} midpoint={midpoint}
-        meetingPin={meetingPin} onMapClick={handleMapClick}
+        myLocation={myLocation} participants={peerLocation ? [{ id: 'peer', name: peerName, color: isHost ? '#22c55e' : '#f43f5e', location: peerLocation }] : []}
+        pois={pois} myName={myName} myColor={isHost ? '#f43f5e' : '#22c55e'}
+        trail={trail} midpoint={midpoint} meetingPin={meetingPin} onMapClick={handleMapClick}
       />
 
       {/* Top bar */}
       <div className="absolute top-4 left-4 z-[10000] bg-white/90 backdrop-blur-md rounded-full px-4 py-2.5 shadow-lg flex items-center gap-2.5">
         <div className={`w-2.5 h-2.5 rounded-full ${s.color}`} />
-        <span className="text-sm font-medium text-gray-700">{s.text}</span>
+        <span className="text-sm font-medium text-gray-700 max-md:hidden">{s.text}</span>
+        <span className="md:hidden text-xs font-medium text-gray-700">{s.text}</span>
         {typing && <span className="text-xs text-gray-400 animate-pulse">typing...</span>}
       </div>
 
       <div className="absolute top-4 right-4 z-[10000] flex gap-2">
-        <button onClick={nativeShare} className="bg-white/90 backdrop-blur-md rounded-full px-5 py-2.5 shadow-xl text-sm font-semibold text-gray-700 hover:bg-white transition flex items-center gap-2 border border-white/50">
-          {copied ? '✅ Copied!' : '📤 Share'}
+        <button onClick={nativeShare} className="bg-white/90 backdrop-blur-md rounded-full px-4 md:px-5 py-2.5 shadow-xl text-sm font-semibold text-gray-700 hover:bg-white transition flex items-center gap-2 border border-white/50">
+          <span className="md:hidden">📤</span><span className="max-md:hidden">{copied ? '✅ Copied!' : '📤 Share'}</span>
         </button>
         <button onClick={() => setShowQR(true)} className="bg-white/90 backdrop-blur-md rounded-full w-10 h-10 shadow-xl flex items-center justify-center text-lg hover:bg-white transition border border-white/50">
           📱
@@ -286,7 +285,7 @@ export default function RoomPage() {
       </div>
 
       {/* Chat button */}
-      <button onClick={handleChatOpen} className={`absolute bottom-32 right-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-xl transition border-2 ${unreadCount > 0 ? 'bg-rose-500 border-rose-400 animate-pulse shadow-rose-400/50' : 'bg-white/90 backdrop-blur-md border-white/50 hover:bg-white'}`}>
+      <button onClick={handleChatOpen} className={`absolute bottom-32 md:bottom-8 right-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-xl transition border-2 ${unreadCount > 0 ? 'bg-rose-500 border-rose-400 animate-pulse shadow-rose-400/50' : 'bg-white/90 backdrop-blur-md border-white/50 hover:bg-white'}`}>
         💬
         {unreadCount > 0 && <span className="absolute -top-1 -right-1 bg-amber-400 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">{unreadCount > 9 ? '9+' : unreadCount}</span>}
       </button>
@@ -294,7 +293,7 @@ export default function RoomPage() {
       {/* Drop Pin button */}
       <button
         onClick={() => setDropPinMode(!dropPinMode)}
-        className={`absolute bottom-32 left-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-lg transition border-2 ${
+        className={`absolute bottom-32 md:bottom-8 left-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-lg transition border-2 ${
           dropPinMode ? 'bg-amber-500 border-amber-400 shadow-amber-400/50 scale-110' : 'bg-white/90 backdrop-blur-md border-white/50 hover:bg-white'
         }`}
         title={dropPinMode ? 'Tap the map to place pin' : 'Drop a meeting pin'}
@@ -317,12 +316,12 @@ export default function RoomPage() {
       {chatOpen && (
         <div className="absolute inset-0 z-[9000] flex flex-col pointer-events-none">
           <div className="flex-1 pointer-events-auto" onClick={() => { setChatOpen(false); setTyping(false) }} />
-          <div className="bg-white/95 backdrop-blur-xl rounded-t-3xl p-4 pb-6 shadow-2xl pointer-events-auto max-h-[50vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white/95 backdrop-blur-xl rounded-t-3xl md:rounded-2xl p-4 pb-6 shadow-2xl pointer-events-auto max-h-[50vh] md:max-h-[60vh] md:max-w-md md:mx-auto md:mb-4 flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm font-semibold text-gray-700">Chat with {peerName}</span>
               <button onClick={() => setChatOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
             </div>
-            <div className="flex-1 overflow-y-auto space-y-2 mb-3 min-h-[120px] max-h-[30vh] px-1">
+            <div className="flex-1 overflow-y-auto space-y-2 mb-3 min-h-[120px] max-h-[30vh] md:max-h-[40vh] px-1">
               {messages.length === 0 && <p className="text-center text-gray-400 text-xs py-8">No messages yet</p>}
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
@@ -340,49 +339,49 @@ export default function RoomPage() {
                 onChange={(e) => handleTyping(e.target.value)} autoFocus
                 className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
               />
-              <button type="submit" className="bg-gradient-to-r from-rose-400 to-purple-400 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md hover:from-rose-500 hover:to-purple-500 transition">➤</button>
+              <button type="submit" className="bg-gradient-to-r from-rose-400 to-purple-400 text-white rounded-full min-w-[44px] min-h-[44px] flex items-center justify-center shadow-md hover:from-rose-500 hover:to-purple-500 transition">➤</button>
             </form>
           </div>
         </div>
       )}
 
       {/* Bottom card */}
-      <div className="absolute bottom-6 left-4 right-4 z-[7000]" style={{ marginRight: '4rem' }}>
-        <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-lg space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+      <div className="absolute bottom-0 md:bottom-6 left-0 md:left-4 right-0 md:right-4 z-[7000] md:max-w-md md:mx-auto" style={{ marginBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="bg-white/95 md:bg-white/90 backdrop-blur-md rounded-t-2xl md:rounded-2xl p-3 md:p-4 shadow-lg space-y-2 md:space-y-3">
+          <div className="grid grid-cols-2 gap-2 md:gap-3">
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1.5 mb-1">
-                <div className={`w-2.5 h-2.5 rounded-full ${isHost ? 'bg-rose-400' : 'bg-emerald-400'}`} />
+              <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full ${isHost ? 'bg-rose-400' : 'bg-emerald-400'}`} />
                 <span className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">{isHost ? 'You' : hName}</span>
               </div>
-              <div className="font-bold text-gray-800 text-lg">{hName}</div>
+              <div className="font-bold text-gray-800 text-base md:text-lg">{hName}</div>
               {myLocation && isHost ? (
-                <div className="text-[11px] text-gray-400 mt-0.5 font-mono">{myLocation.lat.toFixed(5)}, {myLocation.lng.toFixed(5)}</div>
+                <div className="text-[10px] md:text-[11px] text-gray-400 mt-0.5 font-mono truncate">{myLocation.lat.toFixed(4)}, {myLocation.lng.toFixed(4)}</div>
               ) : peerLocation && !isHost ? (
-                <div className="text-[11px] text-gray-400 mt-0.5 font-mono">{peerLocation.lat.toFixed(5)}, {peerLocation.lng.toFixed(5)}</div>
+                <div className="text-[10px] md:text-[11px] text-gray-400 mt-0.5 font-mono truncate">{peerLocation.lat.toFixed(4)}, {peerLocation.lng.toFixed(4)}</div>
               ) : <div className="text-[11px] text-gray-300 mt-0.5">⏳ Waiting...</div>}
             </div>
             <div className="text-center border-l border-gray-200">
-              <div className="flex items-center justify-center gap-1.5 mb-1">
-                <div className={`w-2.5 h-2.5 rounded-full ${isHost ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+              <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full ${isHost ? 'bg-emerald-400' : 'bg-rose-400'}`} />
                 <span className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">{isHost ? fName : 'You'}</span>
               </div>
-              <div className="font-bold text-gray-800 text-lg">{fName}</div>
+              <div className="font-bold text-gray-800 text-base md:text-lg">{fName}</div>
               {peerLocation && isHost ? (
-                <div className="text-[11px] text-gray-400 mt-0.5 font-mono">{peerLocation.lat.toFixed(5)}, {peerLocation.lng.toFixed(5)}</div>
+                <div className="text-[10px] md:text-[11px] text-gray-400 mt-0.5 font-mono truncate">{peerLocation.lat.toFixed(4)}, {peerLocation.lng.toFixed(4)}</div>
               ) : myLocation && !isHost ? (
-                <div className="text-[11px] text-gray-400 mt-0.5 font-mono">{myLocation.lat.toFixed(5)}, {myLocation.lng.toFixed(5)}</div>
+                <div className="text-[10px] md:text-[11px] text-gray-400 mt-0.5 font-mono truncate">{myLocation.lat.toFixed(4)}, {myLocation.lng.toFixed(4)}</div>
               ) : <div className="text-[11px] text-gray-300 mt-0.5">⏳ Waiting...</div>}
             </div>
           </div>
 
           {distance !== null && (
-            <div className="pt-3 border-t border-gray-200 space-y-2">
+            <div className="pt-2 md:pt-3 border-t border-gray-200 space-y-1.5 md:space-y-2">
               <div className="flex items-center justify-center gap-2">
-                <span className="text-xs text-gray-400">Distance</span>
-                <span className="font-bold text-gray-800 text-lg">{distance < 1000 ? `${Math.round(distance)} m` : `${(distance / 1000).toFixed(2)} km`}</span>
+                <span className="text-[11px] md:text-xs text-gray-400">Distance</span>
+                <span className="font-bold text-gray-800 text-base md:text-lg">{distance < 1000 ? `${Math.round(distance)} m` : `${(distance / 1000).toFixed(2)} km`}</span>
               </div>
-              <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
+              <div className="flex items-center justify-center gap-3 md:gap-4 text-[11px] md:text-xs text-gray-500">
                 <span>🚶 {etaWalk} min</span>
                 <span>🚗 {etaDrive} min</span>
               </div>
@@ -390,9 +389,9 @@ export default function RoomPage() {
                 {peerLocation && (
                   <>
                     <a href={`https://www.google.com/maps/dir/?api=1&destination=${peerLocation.lat},${peerLocation.lng}`} target="_blank" rel="noopener noreferrer"
-                      className="text-[11px] bg-blue-50 text-blue-600 rounded-full px-3 py-1.5 font-medium hover:bg-blue-100 transition">Google Maps</a>
+                      className="text-[11px] bg-blue-50 text-blue-600 rounded-full px-2.5 md:px-3 py-1.5 font-medium hover:bg-blue-100 transition">Google Maps</a>
                     <a href={`https://maps.apple.com/?daddr=${peerLocation.lat},${peerLocation.lng}`} target="_blank" rel="noopener noreferrer"
-                      className="text-[11px] bg-gray-100 text-gray-600 rounded-full px-3 py-1.5 font-medium hover:bg-gray-200 transition">Apple Maps</a>
+                      className="text-[11px] bg-gray-100 text-gray-600 rounded-full px-2.5 md:px-3 py-1.5 font-medium hover:bg-gray-200 transition">Apple Maps</a>
                   </>
                 )}
               </div>
@@ -400,11 +399,11 @@ export default function RoomPage() {
           )}
 
           {pois.length > 0 && (
-            <div className="pt-3 border-t border-gray-200">
-              <div className="text-[10px] text-gray-400 font-semibold mb-2">Nearby</div>
+            <div className="pt-2 md:pt-3 border-t border-gray-200">
+              <div className="text-[10px] text-gray-400 font-semibold mb-1.5">Nearby</div>
               <div className="flex flex-wrap gap-1.5">
                 {[...new Set(pois.map((p) => p.type))].slice(0, 8).map((t) => (
-                  <span key={t} className="bg-gray-100 rounded-full px-2.5 py-1 text-[10px] text-gray-600 font-medium">{t.replace(/_/g, ' ')}</span>
+                  <span key={t} className="bg-gray-100 rounded-full px-2 py-1 text-[10px] text-gray-600 font-medium">{t.replace(/_/g, ' ')}</span>
                 ))}
               </div>
             </div>

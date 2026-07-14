@@ -34,34 +34,34 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-rose-200 via-purple-200 to-sky-200 flex items-center justify-center p-6">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/70 backdrop-blur rounded-3xl mb-6 shadow-sm">
-            <span className="text-4xl">📍</span>
+    <div className="min-h-screen w-full bg-gradient-to-br from-rose-200 via-purple-200 to-sky-200 flex items-center justify-center p-4 md:p-8">
+      <div className="w-full max-w-sm md:max-w-md">
+        <div className="text-center mb-8 md:mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white/70 backdrop-blur rounded-2xl md:rounded-3xl mb-4 md:mb-6 shadow-sm">
+            <span className="text-3xl md:text-4xl">📍</span>
           </div>
-          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">Share Loc</h1>
-          <p className="text-gray-500 mt-2 text-sm">Real-time location sharing</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 tracking-tight">Share Loc</h1>
+          <p className="text-gray-500 mt-1 md:mt-2 text-xs md:text-sm">Real-time location sharing</p>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 space-y-4 shadow-lg shadow-purple-200/50 border border-white/60">
+        <div className="bg-white/80 backdrop-blur-xl rounded-2xl md:rounded-3xl p-5 md:p-6 space-y-3 md:space-y-4 shadow-lg shadow-purple-200/50 border border-white/60">
           <input
             type="text"
             placeholder="Your name"
             value={yourName}
             onChange={(e) => setYourName(e.target.value)}
-            className="w-full bg-white/70 border border-purple-200 rounded-2xl px-4 py-3.5 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent text-sm"
+            className="w-full bg-white/70 border border-purple-200 rounded-xl md:rounded-2xl px-4 py-3 md:py-3.5 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent text-sm"
           />
           <input
             type="text"
             placeholder="Friend's name (optional)"
             value={friendName}
             onChange={(e) => setFriendName(e.target.value)}
-            className="w-full bg-white/70 border border-purple-200 rounded-2xl px-4 py-3.5 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent text-sm"
+            className="w-full bg-white/70 border border-purple-200 rounded-xl md:rounded-2xl px-4 py-3 md:py-3.5 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent text-sm"
           />
           <button
             onClick={createRoom}
-            className="w-full bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500 text-white font-semibold py-3.5 px-6 rounded-2xl transition shadow-md shadow-purple-300/30"
+            className="w-full bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500 text-white font-semibold py-3 md:py-3.5 px-6 rounded-xl md:rounded-2xl transition shadow-md shadow-purple-300/30"
           >
             Create a Room
           </button>
@@ -78,18 +78,18 @@ export default function Home() {
               placeholder="Paste room code or link"
               value={joinInput}
               onChange={(e) => setJoinInput(e.target.value)}
-              className="flex-1 bg-white/70 border border-purple-200 rounded-2xl px-4 py-3.5 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent text-sm"
+              className="flex-1 bg-white/70 border border-purple-200 rounded-xl md:rounded-2xl px-4 py-3 md:py-3.5 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-transparent text-sm"
             />
             <button
               type="submit"
-              className="bg-white/70 hover:bg-white/90 text-gray-600 font-semibold py-3.5 px-5 rounded-2xl transition border border-purple-200 shadow-sm"
+              className="bg-white/70 hover:bg-white/90 text-gray-600 font-semibold py-3 md:py-3.5 px-4 md:px-5 rounded-xl md:rounded-2xl transition border border-purple-200 shadow-sm min-w-[60px] md:min-w-[70px]"
             >
               Join
             </button>
           </form>
         </div>
 
-        <p className="text-center text-gray-400 text-xs mt-6">
+        <p className="text-center text-gray-400 text-xs mt-5 md:mt-6">
           Share the link with a friend to meet up
         </p>
       </div>
