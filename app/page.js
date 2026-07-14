@@ -3,22 +3,35 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-function generateId() {
-  return Math.random().toString(36).substring(2, 8)
+function generateCode() {
+  return Math.random().toString(36).substring(2, 6)
+}
+
+function slug(text) {
+  return text.trim().toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20) || 'x'
 }
 
 export default function Home() {
   const router = useRouter()
-  const [roomId, setRoomId] = useState('')
+  const [yourName, setYourName] = useState('Saif')
+  const [friendName, setFriendName] = useState('')
+  const [joinInput, setJoinInput] = useState('')
 
   const createRoom = () => {
-    router.push(`/r/${generateId()}`)
+    const h = slug(yourName) || 'saif'
+    const f = slug(friendName) || 'friend'
+    const code = generateCode()
+    router.push(`/r/${h}~${f}~${code}`)
   }
 
   const joinRoom = (e) => {
     e.preventDefault()
-    const id = roomId.trim().toLowerCase()
-    if (id) router.push(`/r/${id}`)
+    const val = joinInput.trim()
+    if (!val) return
+    // Extract room slug from full URL or use as-is
+    const match = val.match(/\/r\/(.+)/)
+    const slug = match ? match[1] : val
+    router.push(`/r/${slug}`)
   }
 
   return (
@@ -33,6 +46,20 @@ export default function Home() {
         </div>
 
         <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 space-y-4 border border-white/10">
+          <input
+            type="text"
+            placeholder="Your name"
+            value={yourName}
+            onChange={(e) => setYourName(e.target.value)}
+            className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
+          />
+          <input
+            type="text"
+            placeholder="Friend's name (optional)"
+            value={friendName}
+            onChange={(e) => setFriendName(e.target.value)}
+            className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
+          />
           <button
             onClick={createRoom}
             className="w-full bg-white text-blue-700 font-semibold py-3.5 px-6 rounded-2xl hover:bg-blue-50 transition shadow-lg shadow-black/10"
@@ -42,16 +69,16 @@ export default function Home() {
 
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-white/20" />
-            <span className="text-white/40 text-xs font-medium">OR</span>
+            <span className="text-white/40 text-xs font-medium">OR JOIN</span>
             <div className="flex-1 h-px bg-white/20" />
           </div>
 
           <form onSubmit={joinRoom} className="flex gap-2">
             <input
               type="text"
-              placeholder="Enter room code"
-              value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
+              placeholder="Paste room code or link"
+              value={joinInput}
+              onChange={(e) => setJoinInput(e.target.value)}
               className="flex-1 bg-white/10 border border-white/20 rounded-2xl px-4 py-3.5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent text-sm"
             />
             <button

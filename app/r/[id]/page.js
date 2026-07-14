@@ -29,8 +29,28 @@ const STATUS = {
   error: { color: 'bg-red-500', text: 'Connection failed' },
 }
 
+function parseRoomSlug(slug) {
+  const parts = slug.split('~')
+  if (parts.length >= 3) {
+    return {
+      hostName: parts[0] || 'Saif',
+      friendName: parts[1] || 'Friend',
+      roomCode: parts.slice(2).join('~'),
+    }
+  }
+  return { hostName: 'Saif', friendName: 'Friend', roomCode: slug }
+}
+
+function capitalize(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1)
+}
+
 export default function RoomPage() {
-  const { id: roomId } = useParams()
+  const { id: rawSlug } = useParams()
+  const { hostName, friendName, roomCode } = parseRoomSlug(rawSlug)
+  const hName = capitalize(hostName)
+  const fName = capitalize(friendName)
+
   const peerRef = useRef(null)
   const connRef = useRef(null)
   const watchRef = useRef(null)
@@ -42,7 +62,7 @@ export default function RoomPage() {
   const [copied, setCopied] = useState(false)
 
   const shareUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/r/${roomId}`
+    ? `${window.location.origin}/r/${rawSlug}`
     : ''
 
   const sendLocation = useCallback((loc) => {
@@ -51,7 +71,6 @@ export default function RoomPage() {
     }
   }, [])
 
-  // Start watching location immediately on mount, regardless of connection
   useEffect(() => {
     if (!navigator.geolocation) {
       setStatus('no-gps')
@@ -93,7 +112,7 @@ export default function RoomPage() {
     let destroyed = false
 
     const init = () => {
-      const hostPeer = new Peer(roomId, { debug: 0 })
+      const hostPeer = new Peer(roomCode, { debug: 0 })
       peerRef.current = hostPeer
 
       hostPeer.on('open', () => {
@@ -118,7 +137,6 @@ export default function RoomPage() {
           setPeerLocation(null)
         })
 
-        // Send current location immediately if we already have it
         if (myLocationRef.current) {
           conn.send({ type: 'location', location: myLocationRef.current })
         }
@@ -144,7 +162,7 @@ export default function RoomPage() {
         setRole('guest')
         setStatus('connecting')
 
-        const conn = guestPeer.connect(roomId, { reliable: true })
+        const conn = guestPeer.connect(roomCode, { reliable: true })
         connRef.current = conn
 
         conn.on('open', () => {
@@ -162,7 +180,6 @@ export default function RoomPage() {
             setPeerLocation(null)
           })
 
-          // Send current location immediately if we already have it
           if (myLocationRef.current) {
             conn.send({ type: 'location', location: myLocationRef.current })
           }
@@ -184,7 +201,7 @@ export default function RoomPage() {
       destroyed = true
       if (peerRef.current) peerRef.current.destroy()
     }
-  }, [roomId, sendLocation])
+  }, [roomCode, sendLocation])
 
   const s = STATUS[status] || STATUS.error
 
@@ -199,17 +216,19 @@ export default function RoomPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const isSaif = role === 'host'
+  const isHost = role === 'host'
+  const myName = isHost ? hName : fName
+  const peerName = isHost ? fName : hName
 
   return (
     <div className="h-screen w-full relative bg-black overflow-hidden">
       <MapView
         myLocation={myLocation}
         peerLocation={peerLocation}
-        myLabel={isSaif ? 'S' : 'F'}
-        peerLabel={isSaif ? 'F' : 'S'}
-        myColor={isSaif ? '#3b82f6' : '#22c55e'}
-        peerColor={isSaif ? '#22c55e' : '#3b82f6'}
+        myLabel={myName.charAt(0).toUpperCase()}
+        peerLabel={peerName.charAt(0).toUpperCase()}
+        myColor={isHost ? '#3b82f6' : '#22c55e'}
+        peerColor={isHost ? '#22c55e' : '#3b82f6'}
       />
 
       <div className="absolute inset-0 pointer-events-none">
@@ -231,19 +250,17 @@ export default function RoomPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1.5 mb-1">
-                  <div className={`w-2.5 h-2.5 rounded-full ${isSaif ? 'bg-blue-500' : 'bg-green-500'}`} />
+                  <div className={`w-2.5 h-2.5 rounded-full ${isHost ? 'bg-blue-500' : 'bg-green-500'}`} />
                   <span className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">
-                    {isSaif ? 'You' : 'Saif'}
+                    {isHost ? 'You' : hName}
                   </span>
                 </div>
-                <div className="font-bold text-gray-900 text-lg">
-                  {isSaif ? 'Saif' : 'Saif'}
-                </div>
-                {myLocation && isSaif ? (
+                <div className="font-bold text-gray-900 text-lg">{hName}</div>
+                {myLocation && isHost ? (
                   <div className="text-[11px] text-gray-400 mt-0.5 font-mono">
                     {myLocation.lat.toFixed(5)}, {myLocation.lng.toFixed(5)}
                   </div>
-                ) : peerLocation && !isSaif ? (
+                ) : peerLocation && !isHost ? (
                   <div className="text-[11px] text-gray-400 mt-0.5 font-mono">
                     {peerLocation.lat.toFixed(5)}, {peerLocation.lng.toFixed(5)}
                   </div>
@@ -253,21 +270,19 @@ export default function RoomPage() {
               </div>
               <div className="text-center border-l border-gray-200">
                 <div className="flex items-center justify-center gap-1.5 mb-1">
-                  <div className={`w-2.5 h-2.5 rounded-full ${isSaif ? 'bg-green-500' : 'bg-blue-500'}`} />
+                  <div className={`w-2.5 h-2.5 rounded-full ${isHost ? 'bg-green-500' : 'bg-blue-500'}`} />
                   <span className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase">
-                    {isSaif ? 'Friend' : 'You'}
+                    {isHost ? fName : 'You'}
                   </span>
                 </div>
-                <div className="font-bold text-gray-900 text-lg">
-                  {peerLocation ? 'Friend' : '—'}
-                </div>
-                {peerLocation && !isSaif ? (
-                  <div className="text-[11px] text-gray-400 mt-0.5 font-mono">
-                    {myLocation.lat.toFixed(5)}, {myLocation.lng.toFixed(5)}
-                  </div>
-                ) : peerLocation && isSaif ? (
+                <div className="font-bold text-gray-900 text-lg">{fName}</div>
+                {peerLocation && isHost ? (
                   <div className="text-[11px] text-gray-400 mt-0.5 font-mono">
                     {peerLocation.lat.toFixed(5)}, {peerLocation.lng.toFixed(5)}
+                  </div>
+                ) : myLocation && !isHost ? (
+                  <div className="text-[11px] text-gray-400 mt-0.5 font-mono">
+                    {myLocation.lat.toFixed(5)}, {myLocation.lng.toFixed(5)}
                   </div>
                 ) : (
                   <div className="text-[11px] text-gray-300 mt-0.5">⏳ Waiting...</div>
