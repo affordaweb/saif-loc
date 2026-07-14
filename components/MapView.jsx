@@ -5,44 +5,29 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
 const POI_ICONS = {
-  cafe: '☕',
-  restaurant: '🍽️',
-  fast_food: '🍔',
-  pub: '🍺',
-  supermarket: '🛒',
-  convenience: '🏪',
-  mall: '🏬',
-  pharmacy: '💊',
-  atm: '🏧',
-  bank: '🏦',
-  fuel: '⛽',
-  bakery: '🥐',
-  clothes: '👕',
-  electronics: '📱',
-  default: '📍',
-}
-
-function poiIcon(type, name) {
-  const emoji = POI_ICONS[type] || POI_ICONS.default
-  return L.divIcon({
-    html: `<div style="width:28px;height:28px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border:2px solid rgba(255,255,255,0.5);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;" title="${name}">${emoji}</div>`,
-    className: '',
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-  })
+  cafe: '☕', restaurant: '🍽️', fast_food: '🍔', pub: '🍺',
+  supermarket: '🛒', convenience: '🏪', mall: '🏬', pharmacy: '💊',
+  atm: '🏧', bank: '🏦', fuel: '⛽', bakery: '🥐',
+  clothes: '👕', electronics: '📱', default: '📍',
 }
 
 function poiLabelIcon(type, name) {
   const emoji = POI_ICONS[type] || POI_ICONS.default
   return L.divIcon({
     html: `<div style="display:flex;align-items:center;gap:4px;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:3px 10px 3px 6px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;white-space:nowrap;"><span style="font-size:12px;">${emoji}</span><span style="color:white;font-size:10px;font-weight:500;">${name}</span></div>`,
-    className: '',
-    iconSize: [0, 0],
-    iconAnchor: [0, 0],
+    className: '', iconSize: [0, 0], iconAnchor: [0, 0],
   })
 }
 
-export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, myColor, peerColor, pois }) {
+function avatarIcon(name, color) {
+  const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color.replace('#', '')}&color=fff&size=80&rounded=true&bold=true`
+  return L.divIcon({
+    html: `<div class="marker-pulse" style="width:44px;height:44px;border-radius:50%;border:3px solid white;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,0.4);background:${color};display:flex;align-items:center;justify-content:center;"><img src="${url}" alt="${name}" style="width:44px;height:44px;border-radius:50%;" /></div>`,
+    className: '', iconSize: [44, 44], iconAnchor: [22, 22],
+  })
+}
+
+export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, myColor, peerColor, pois, myName, peerName }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const initializedRef = useRef(false)
@@ -51,6 +36,7 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
   const myCircleRef = useRef(null)
   const lineRef = useRef(null)
   const poiLayerRef = useRef(null)
+  const styleRef = useRef(null)
 
   useEffect(() => {
     if (initializedRef.current || !myLocation) return
@@ -68,11 +54,34 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
       { maxZoom: 19 }
     ).addTo(map)
 
+    // Fix mobile rendering
+    setTimeout(() => map.invalidateSize(), 300)
+
     return () => {
       map.remove()
       mapRef.current = null
     }
   }, [myLocation])
+
+  // Inject pulsing animation CSS
+  useEffect(() => {
+    if (styleRef.current) return
+    styleRef.current = document.createElement('style')
+    styleRef.current.textContent = `
+      @keyframes markerPulse {
+        0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6), 0 3px 12px rgba(0,0,0,0.4); }
+        50% { box-shadow: 0 0 0 18px rgba(255,255,255,0), 0 3px 12px rgba(0,0,0,0.4); }
+        100% { box-shadow: 0 0 0 0 rgba(255,255,255,0), 0 3px 12px rgba(0,0,0,0.4); }
+      }
+      .marker-pulse {
+        animation: markerPulse 2s ease-in-out infinite;
+      }
+    `
+    document.head.appendChild(styleRef.current)
+    return () => {
+      if (styleRef.current) styleRef.current.remove()
+    }
+  }, [])
 
   useEffect(() => {
     const map = mapRef.current
@@ -83,12 +92,7 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
     if (myMarkerRef.current) {
       myMarkerRef.current.setLatLng(latlng)
     } else {
-      const icon = L.divIcon({
-        html: `<div style="width:44px;height:44px;background:${myColor};border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;box-shadow:0 3px 12px rgba(0,0,0,0.35);">${myLabel}</div>`,
-        className: '',
-        iconSize: [44, 44],
-        iconAnchor: [22, 22],
-      })
+      const icon = avatarIcon(myName, myColor)
       myMarkerRef.current = L.marker(latlng, { icon, zIndexOffset: 1000 }).addTo(map)
     }
 
@@ -96,12 +100,8 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
       myCircleRef.current.setLatLng(latlng)
     } else if (myLocation.accuracy) {
       myCircleRef.current = L.circle(latlng, {
-        radius: myLocation.accuracy,
-        color: myColor,
-        fillColor: myColor,
-        fillOpacity: 0.08,
-        weight: 1.5,
-        opacity: 0.4,
+        radius: myLocation.accuracy, color: myColor, fillColor: myColor,
+        fillOpacity: 0.08, weight: 1.5, opacity: 0.4,
       }).addTo(map)
     }
 
@@ -112,7 +112,7 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
     } else {
       map.setView(latlng, 15)
     }
-  }, [myLocation, myColor, myLabel, peerLocation])
+  }, [myLocation, myColor, myName, peerLocation])
 
   useEffect(() => {
     const map = mapRef.current
@@ -123,12 +123,7 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
     if (peerMarkerRef.current) {
       peerMarkerRef.current.setLatLng(latlng)
     } else {
-      const icon = L.divIcon({
-        html: `<div style="width:44px;height:44px;background:${peerColor};border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:18px;box-shadow:0 3px 12px rgba(0,0,0,0.35);">${peerLabel}</div>`,
-        className: '',
-        iconSize: [44, 44],
-        iconAnchor: [22, 22],
-      })
+      const icon = avatarIcon(peerName, peerColor)
       peerMarkerRef.current = L.marker(latlng, { icon, zIndexOffset: 999 }).addTo(map)
     }
 
@@ -141,24 +136,18 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
         lineRef.current.setLatLngs([myLatlng, latlng])
       } else {
         lineRef.current = L.polyline([myLatlng, latlng], {
-          color: '#ffffff',
-          weight: 2,
-          opacity: 0.5,
-          dashArray: '8, 8',
+          color: '#ffffff', weight: 2, opacity: 0.5, dashArray: '8, 8',
         }).addTo(map)
       }
     }
-  }, [peerLocation, peerColor, peerLabel, myLocation])
+  }, [peerLocation, peerColor, peerName, myLocation])
 
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
 
-    if (poiLayerRef.current) {
-      poiLayerRef.current.clearLayers()
-    } else {
-      poiLayerRef.current = L.layerGroup().addTo(map)
-    }
+    if (poiLayerRef.current) poiLayerRef.current.clearLayers()
+    else poiLayerRef.current = L.layerGroup().addTo(map)
 
     if (!pois || pois.length === 0) return
 
