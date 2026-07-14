@@ -231,7 +231,7 @@ export default function RoomPage() {
         peerColor={isHost ? '#22c55e' : '#3b82f6'}
       />
 
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none z-50">
         <div className="pointer-events-auto absolute top-4 left-4 right-4 flex items-center justify-between gap-2">
           <div className="bg-white/90 backdrop-blur-md rounded-2xl px-4 py-2.5 shadow-lg flex items-center gap-2.5">
             <div className={`w-2.5 h-2.5 rounded-full ${s.color}`} />
@@ -300,6 +300,14 @@ export default function RoomPage() {
                 </span>
               </div>
             )}
+            <div className="pt-3 border-t border-gray-200">
+              <button
+                onClick={copyLink}
+                className="w-full bg-gray-100 hover:bg-gray-200 rounded-xl py-2.5 text-sm font-medium text-gray-700 transition flex items-center justify-center gap-2"
+              >
+                {copied ? '✅ Copied!' : '🔗 Copy share link'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
