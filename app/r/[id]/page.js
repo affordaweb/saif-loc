@@ -247,8 +247,8 @@ export default function RoomPage() {
   return (
     <div className="h-screen w-full relative bg-black overflow-hidden">
     { !consented && (
-      <div className="fixed inset-0 z-[50] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-        <div className="bg-white/90 backdrop-blur-md rounded-2xl p-6 md:p-8 w-full max-w-sm text-center">
+      <div className="absolute inset-x-0 bottom-4 left-4 right-4 mb-4 flex items-center justify-center pointer-events-none">
+        <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 md:p-6 w-full max-w-md text-center pointer-events-auto">
           <div className="inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 bg-white/70 backdrop-blur rounded-2xl md:rounded-3xl mb-4"><span className="text-3xl md:text-4xl">📍</span></div>
           <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
             {role === 'host' ? `Share your location with ${fName}` : `${hName} wants to share locations`}
