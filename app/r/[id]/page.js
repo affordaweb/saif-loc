@@ -276,13 +276,14 @@ export default function RoomPage() {
         {typing && <span className="text-xs text-gray-400 animate-pulse">typing...</span>}
       </div>
 
-      <button onClick={nativeShare} className="absolute top-4 right-4 z-[10000] bg-white/90 backdrop-blur-md rounded-full px-5 py-2.5 shadow-xl text-sm font-semibold text-gray-700 hover:bg-white transition flex items-center gap-2 border border-white/50">
-        {copied ? '✅ Copied!' : '📤 Share'}
-      </button>
-
-      <button onClick={() => setShowQR(true)} className="absolute top-4 right-28 z-[10000] bg-white/90 backdrop-blur-md rounded-full w-10 h-10 shadow-xl flex items-center justify-center text-sm hover:bg-white transition border border-white/50">
-        📱
-      </button>
+      <div className="absolute top-4 right-4 z-[10000] flex gap-2">
+        <button onClick={nativeShare} className="bg-white/90 backdrop-blur-md rounded-full px-5 py-2.5 shadow-xl text-sm font-semibold text-gray-700 hover:bg-white transition flex items-center gap-2 border border-white/50">
+          {copied ? '✅ Copied!' : '📤 Share'}
+        </button>
+        <button onClick={() => setShowQR(true)} className="bg-white/90 backdrop-blur-md rounded-full w-10 h-10 shadow-xl flex items-center justify-center text-lg hover:bg-white transition border border-white/50">
+          📱
+        </button>
+      </div>
 
       {/* Chat button */}
       <button onClick={handleChatOpen} className={`absolute bottom-32 right-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-xl transition border-2 ${unreadCount > 0 ? 'bg-rose-500 border-rose-400 animate-pulse shadow-rose-400/50' : 'bg-white/90 backdrop-blur-md border-white/50 hover:bg-white'}`}>

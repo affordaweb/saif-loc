@@ -35,20 +35,20 @@ function midpointIcon() {
 
 function meetingPinIcon(emoji = '📍') {
   return L.divIcon({
-    html: `<div style="width:36px;height:36px;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);border:2px solid #f59e0b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 10px rgba(0,0,0,0.4);transform:rotate(0);">${emoji}</div>`,
+    html: `<div style="width:36px;height:36px;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);border:2px solid #f59e0b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 10px rgba(0,0,0,0.4);">${emoji}</div>`,
     className: '', iconSize: [36, 36], iconAnchor: [18, 18],
   })
 }
 
 export default function MapView({
-  myLocation, peerLocation, myLabel, peerLabel, myColor, peerColor,
-  pois, myName, peerName, trail, midpoint, meetingPin, onMapClick,
+  myLocation, participants = [], pois, myName, myColor,
+  trail, midpoint, meetingPin, onMapClick,
 }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const initializedRef = useRef(false)
+  const markersRef = useRef({})
   const myMarkerRef = useRef(null)
-  const peerMarkerRef = useRef(null)
   const myCircleRef = useRef(null)
   const lineRef = useRef(null)
   const poiLayerRef = useRef(null)
@@ -61,48 +61,22 @@ export default function MapView({
   useEffect(() => {
     if (initializedRef.current) return
     initializedRef.current = true
-
-    const map = L.map(containerRef.current, {
-      zoomControl: false, attributionControl: false,
-    }).setView([20, 0], 2)
-
-    L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { maxZoom: 19 }
-    ).addTo(map)
-
-    map.on('click', (e) => {
-      if (onMapClick) onMapClick(e.latlng)
-    })
-
+    const map = L.map(containerRef.current, { zoomControl: false, attributionControl: false }).setView([20, 0], 2)
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map)
+    map.on('click', (e) => clickHandlerRef.current?.(e.latlng))
     mapRef.current = map
     map.invalidateSize()
-
     return () => { map.remove(); mapRef.current = null; initializedRef.current = false }
   }, [])
 
-  // Update map click handler reference
-  useEffect(() => {
-    clickHandlerRef.current = onMapClick
-    if (mapRef.current) {
-      mapRef.current.off('click')
-      mapRef.current.on('click', (e) => {
-        if (clickHandlerRef.current) clickHandlerRef.current(e.latlng)
-      })
-    }
-  }, [onMapClick])
+  useEffect(() => { clickHandlerRef.current = onMapClick }, [onMapClick])
 
   useEffect(() => {
     if (styleRef.current) return
     styleRef.current = document.createElement('style')
     styleRef.current.textContent = `
-      @keyframes markerPulse {
-        0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6), 0 3px 12px rgba(0,0,0,0.4); }
-        50% { box-shadow: 0 0 0 18px rgba(255,255,255,0), 0 3px 12px rgba(0,0,0,0.4); }
-        100% { box-shadow: 0 0 0 0 rgba(255,255,255,0), 0 3px 12px rgba(0,0,0,0.4); }
-      }
-      .marker-pulse { animation: markerPulse 2s ease-in-out infinite; }
-    `
+      @keyframes markerPulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6), 0 3px 12px rgba(0,0,0,0.4); } 50% { box-shadow: 0 0 0 18px rgba(255,255,255,0), 0 3px 12px rgba(0,0,0,0.4); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0), 0 3px 12px rgba(0,0,0,0.4); } }
+      .marker-pulse { animation: markerPulse 2s ease-in-out infinite; }`
     document.head.appendChild(styleRef.current)
     return () => { if (styleRef.current) styleRef.current.remove() }
   }, [])
@@ -112,51 +86,47 @@ export default function MapView({
     const map = mapRef.current
     if (!map || !myLocation) return
     const latlng = [myLocation.lat, myLocation.lng]
-
     if (myMarkerRef.current) myMarkerRef.current.setLatLng(latlng)
-    else {
-      const icon = avatarIcon(myName, myColor)
-      myMarkerRef.current = L.marker(latlng, { icon, zIndexOffset: 1000 }).addTo(map)
-    }
-
+    else { myMarkerRef.current = L.marker(latlng, { icon: avatarIcon(myName || 'Me', myColor || '#3b82f6'), zIndexOffset: 1000 }).addTo(map) }
     if (myCircleRef.current) myCircleRef.current.setLatLng(latlng)
-    else if (myLocation.accuracy) {
-      myCircleRef.current = L.circle(latlng, {
-        radius: myLocation.accuracy, color: myColor, fillColor: myColor,
-        fillOpacity: 0.08, weight: 1.5, opacity: 0.4,
-      }).addTo(map)
-    }
+    else if (myLocation.accuracy) { myCircleRef.current = L.circle(latlng, { radius: myLocation.accuracy, color: myColor || '#3b82f6', fillColor: myColor || '#3b82f6', fillOpacity: 0.08, weight: 1.5, opacity: 0.4 }).addTo(map) }
 
-    if (peerLocation) {
-      const b = L.latLngBounds(latlng, [peerLocation.lat, peerLocation.lng])
+    if (participants.length > 0) {
+      const all = [latlng, ...participants.filter(p => p.location).map(p => [p.location.lat, p.location.lng])]
+      const b = L.latLngBounds(all)
       map.fitBounds(b, { padding: [70, 70], maxZoom: 16 })
     } else map.setView(latlng, 15)
-  }, [myLocation, myColor, myName, peerLocation])
+  }, [myLocation, myColor, myName, participants])
 
-  // Peer marker + line
+  // Participant markers
   useEffect(() => {
     const map = mapRef.current
-    if (!map || !peerLocation) return
-    const latlng = [peerLocation.lat, peerLocation.lng]
+    if (!map) return
+    const ids = new Set(participants.map(p => p.id))
+    Object.keys(markersRef.current).forEach(id => {
+      if (!ids.has(id)) { map.removeLayer(markersRef.current[id]); delete markersRef.current[id] }
+    })
+    participants.forEach(p => {
+      if (!p.location) return
+      const latlng = [p.location.lat, p.location.lng]
+      if (markersRef.current[p.id]) markersRef.current[p.id].setLatLng(latlng)
+      else { markersRef.current[p.id] = L.marker(latlng, { icon: avatarIcon(p.name, p.color || '#22c55e'), zIndexOffset: 999 }).addTo(map) }
+    })
 
-    if (peerMarkerRef.current) peerMarkerRef.current.setLatLng(latlng)
-    else {
-      const icon = avatarIcon(peerName, peerColor)
-      peerMarkerRef.current = L.marker(latlng, { icon, zIndexOffset: 999 }).addTo(map)
-    }
-
-    if (myLocation) {
-      const myLatlng = [myLocation.lat, myLocation.lng]
-      const b = L.latLngBounds(myLatlng, latlng)
+    if (myLocation && participants.some(p => p.location)) {
+      const all = [[myLocation.lat, myLocation.lng], ...participants.filter(p => p.location).map(p => [p.location.lat, p.location.lng])]
+      const b = L.latLngBounds(all)
       map.fitBounds(b, { padding: [70, 70], maxZoom: 16 })
-      if (lineRef.current) lineRef.current.setLatLngs([myLatlng, latlng])
-      else {
-        lineRef.current = L.polyline([myLatlng, latlng], {
-          color: '#ffffff', weight: 2, opacity: 0.5, dashArray: '8, 8',
-        }).addTo(map)
+
+      const lines = all.filter((_, i) => i > 0).map(p => [[myLocation.lat, myLocation.lng], p])
+      if (lineRef.current) {
+        const flat = [[myLocation.lat, myLocation.lng], ...all.slice(1)]
+        lineRef.current.setLatLngs(flat)
+      } else {
+        lineRef.current = L.polyline(all, { color: '#ffffff', weight: 2, opacity: 0.5, dashArray: '8, 8' }).addTo(map)
       }
     }
-  }, [peerLocation, peerColor, peerName, myLocation])
+  }, [participants, myLocation])
 
   // POIs
   useEffect(() => {
@@ -164,10 +134,8 @@ export default function MapView({
     if (!map) return
     if (poiLayerRef.current) poiLayerRef.current.clearLayers()
     else poiLayerRef.current = L.layerGroup().addTo(map)
-    if (!pois || pois.length === 0) return
-    pois.forEach((poi) => {
-      L.marker([poi.lat, poi.lng], { icon: poiLabelIcon(poi.type, poi.name) }).addTo(poiLayerRef.current)
-    })
+    if (!pois?.length) return
+    pois.forEach(poi => L.marker([poi.lat, poi.lng], { icon: poiLabelIcon(poi.type, poi.name) }).addTo(poiLayerRef.current))
   }, [pois])
 
   // Trail
@@ -175,11 +143,7 @@ export default function MapView({
     const map = mapRef.current
     if (!map) return
     if (trailRef.current) trailRef.current.setLatLngs(trail || [])
-    else if (trail && trail.length > 1) {
-      trailRef.current = L.polyline(trail.map(t => [t.lat, t.lng]), {
-        color: myColor, weight: 3, opacity: 0.4, dashArray: '6, 8',
-      }).addTo(map)
-    }
+    else if (trail?.length > 1) trailRef.current = L.polyline(trail.map(t => [t.lat, t.lng]), { color: myColor || '#3b82f6', weight: 3, opacity: 0.4, dashArray: '6, 8' }).addTo(map)
   }, [trail, myColor])
 
   // Midpoint
@@ -187,11 +151,7 @@ export default function MapView({
     const map = mapRef.current
     if (!map) return
     if (midpointRef.current) { map.removeLayer(midpointRef.current); midpointRef.current = null }
-    if (midpoint) {
-      midpointRef.current = L.marker([midpoint.lat, midpoint.lng], {
-        icon: midpointIcon(), zIndexOffset: 1100,
-      }).addTo(map).bindPopup('⭐ Meeting midpoint')
-    }
+    if (midpoint) midpointRef.current = L.marker([midpoint.lat, midpoint.lng], { icon: midpointIcon(), zIndexOffset: 1100 }).addTo(map).bindPopup('⭐ Meeting midpoint')
   }, [midpoint])
 
   // Meeting pin
@@ -199,11 +159,7 @@ export default function MapView({
     const map = mapRef.current
     if (!map) return
     if (meetingPinRef.current) { map.removeLayer(meetingPinRef.current); meetingPinRef.current = null }
-    if (meetingPin) {
-      meetingPinRef.current = L.marker([meetingPin.lat, meetingPin.lng], {
-        icon: meetingPinIcon(), zIndexOffset: 1100,
-      }).addTo(map).bindPopup(`📍 Meeting spot`)
-    }
+    if (meetingPin) meetingPinRef.current = L.marker([meetingPin.lat, meetingPin.lng], { icon: meetingPinIcon(), zIndexOffset: 1100 }).addTo(map).bindPopup('📍 Meeting spot')
   }, [meetingPin])
 
   return <div ref={containerRef} className="w-full h-full" />
