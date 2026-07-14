@@ -105,6 +105,7 @@ export default function RoomPage() {
   const [role, setRole] = useState(null)
   const [copied, setCopied] = useState(false)
   const [pois, setPois] = useState([])
+  const [consented, setConsented] = useState(false)
 
   const shareUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/r/${rawSlug}`
@@ -117,6 +118,7 @@ export default function RoomPage() {
   }, [])
 
   useEffect(() => {
+    if (!consented) return
     if (!navigator.geolocation) {
       setStatus('no-gps')
       return
@@ -151,7 +153,7 @@ export default function RoomPage() {
     return () => {
       if (watchRef.current) navigator.geolocation.clearWatch(watchRef.current)
     }
-  }, [sendLocation])
+  }, [sendLocation, consented])
 
   useEffect(() => {
     if (!myLocation) return
@@ -273,6 +275,40 @@ export default function RoomPage() {
   const isHost = role === 'host'
   const myName = isHost ? hName : fName
   const peerName = isHost ? fName : hName
+
+  if (!consented) {
+    return (
+      <div className="h-screen w-full bg-gray-900 flex items-center justify-center p-6">
+        <div className="text-center max-w-sm">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-white/10 backdrop-blur rounded-3xl mb-6">
+            <span className="text-4xl">📍</span>
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-2">
+            {role === 'host'
+              ? `Share your location with ${fName}`
+              : `${hName} wants to share locations`}
+          </h2>
+          <p className="text-gray-400 text-sm mb-8">
+            {role === 'host'
+              ? `Your location will be shared with ${fName} so you can meet up.`
+              : `Share your location to meet up with ${hName}.`}
+          </p>
+          <button
+            onClick={() => setConsented(true)}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-6 rounded-2xl transition shadow-lg mb-3"
+          >
+            Share Location
+          </button>
+          <button
+            onClick={() => setStatus('no-gps')}
+            className="w-full bg-white/10 hover:bg-white/20 text-gray-300 font-medium py-3 px-6 rounded-2xl transition"
+          >
+            Not now
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="h-screen w-full relative bg-black overflow-hidden">
