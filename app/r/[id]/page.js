@@ -93,6 +93,8 @@ export default function RoomPage() {
   const [meetingPin, setMeetingPin] = useState(null)
   const [dropPinMode, setDropPinMode] = useState(false)
   const [showQR, setShowQR] = useState(false)
+  const [locationGranted, setLocationGranted] = useState(false)
+  const [locationDenied, setLocationDenied] = useState(false)
 
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/r/${rawSlug}` : ''
 
