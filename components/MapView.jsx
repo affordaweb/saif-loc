@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
 
 const POI_ICONS = {
   cafe: '☕', restaurant: '🍽️', fast_food: '🍔', pub: '🍺',
@@ -38,30 +37,30 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
   const poiLayerRef = useRef(null)
   const styleRef = useRef(null)
 
+  // Init map immediately on mount
   useEffect(() => {
-    if (initializedRef.current || !myLocation) return
+    if (initializedRef.current || !containerRef.current) return
     initializedRef.current = true
 
     const map = L.map(containerRef.current, {
       zoomControl: false,
       attributionControl: false,
-    }).setView([myLocation.lat, myLocation.lng], 15)
-
-    mapRef.current = map
+    }).setView([20, 0], 2)
 
     L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       { maxZoom: 19 }
     ).addTo(map)
 
-    // Fix mobile rendering
-    setTimeout(() => map.invalidateSize(), 300)
+    mapRef.current = map
+    map.invalidateSize()
 
     return () => {
       map.remove()
       mapRef.current = null
+      initializedRef.current = false
     }
-  }, [myLocation])
+  }, [])
 
   // Inject pulsing animation CSS
   useEffect(() => {
@@ -73,21 +72,20 @@ export default function MapView({ myLocation, peerLocation, myLabel, peerLabel, 
         50% { box-shadow: 0 0 0 18px rgba(255,255,255,0), 0 3px 12px rgba(0,0,0,0.4); }
         100% { box-shadow: 0 0 0 0 rgba(255,255,255,0), 0 3px 12px rgba(0,0,0,0.4); }
       }
-      .marker-pulse {
-        animation: markerPulse 2s ease-in-out infinite;
-      }
+      .marker-pulse { animation: markerPulse 2s ease-in-out infinite; }
     `
     document.head.appendChild(styleRef.current)
-    return () => {
-      if (styleRef.current) styleRef.current.remove()
-    }
+    return () => { if (styleRef.current) styleRef.current.remove() }
   }, [])
 
+  // Pan to myLocation when it arrives
   useEffect(() => {
     const map = mapRef.current
     if (!map || !myLocation) return
 
     const latlng = [myLocation.lat, myLocation.lng]
+
+    if (!myLocation) return
 
     if (myMarkerRef.current) {
       myMarkerRef.current.setLatLng(latlng)

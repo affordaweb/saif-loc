@@ -267,7 +267,7 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="h-dvh w-full relative bg-black overflow-hidden">
+    <div className="h-screen w-full relative bg-black overflow-hidden">
       <MapView
         myLocation={myLocation}
         peerLocation={peerLocation}
