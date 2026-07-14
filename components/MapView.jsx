@@ -90,13 +90,7 @@ export default function MapView({
     else { myMarkerRef.current = L.marker(latlng, { icon: avatarIcon(myName || 'Me', myColor || '#3b82f6'), zIndexOffset: 1000 }).addTo(map) }
     if (myCircleRef.current) myCircleRef.current.setLatLng(latlng)
     else if (myLocation.accuracy) { myCircleRef.current = L.circle(latlng, { radius: myLocation.accuracy, color: myColor || '#3b82f6', fillColor: myColor || '#3b82f6', fillOpacity: 0.08, weight: 1.5, opacity: 0.4 }).addTo(map) }
-
-    if (participants.length > 0) {
-      const all = [latlng, ...participants.filter(p => p.location).map(p => [p.location.lat, p.location.lng])]
-      const b = L.latLngBounds(all)
-      map.fitBounds(b, { padding: [70, 70], maxZoom: 16 })
-    } else map.setView(latlng, 15)
-  }, [myLocation, myColor, myName, participants])
+  }, [myLocation, myColor, myName])
 
   // Participant markers
   useEffect(() => {
@@ -113,17 +107,34 @@ export default function MapView({
       else { markersRef.current[p.id] = L.marker(latlng, { icon: avatarIcon(p.name, p.color || '#22c55e'), zIndexOffset: 999 }).addTo(map) }
     })
 
+    // Fit bounds to show all known locations (myLocation + participants)
+    const locations = []
+    if (myLocation) {
+      locations.push([myLocation.lat, myLocation.lng])
+    }
+    participants.filter(p => p.location).forEach(p => {
+      locations.push([p.location.lat, p.location.lng])
+    })
+    if (locations.length > 0) {
+      const b = L.latLngBounds(locations)
+      map.fitBounds(b, { padding: [70, 70], maxZoom: 16 })
+    }
+
+    // Draw lines from myLocation to each participant (only if myLocation exists)
     if (myLocation && participants.some(p => p.location)) {
       const all = [[myLocation.lat, myLocation.lng], ...participants.filter(p => p.location).map(p => [p.location.lat, p.location.lng])]
-      const b = L.latLngBounds(all)
-      map.fitBounds(b, { padding: [70, 70], maxZoom: 16 })
-
       const lines = all.filter((_, i) => i > 0).map(p => [[myLocation.lat, myLocation.lng], p])
       if (lineRef.current) {
         const flat = [[myLocation.lat, myLocation.lng], ...all.slice(1)]
         lineRef.current.setLatLngs(flat)
       } else {
         lineRef.current = L.polyline(all, { color: '#ffffff', weight: 2, opacity: 0.5, dashArray: '8, 8' }).addTo(map)
+      }
+    } else {
+      // Clear line if no myLocation or no participants
+      if (lineRef.current) {
+        map.removeLayer(lineRef.current)
+        lineRef.current = null
       }
     }
   }, [participants, myLocation])
