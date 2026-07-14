@@ -96,6 +96,7 @@ export default function RoomPage() {
   const [chatOpen, setChatOpen] = useState(false)
   const [messages, setMessages] = useState([])
   const [chatInput, setChatInput] = useState('')
+  const [unreadCount, setUnreadCount] = useState(0)
 
   const shareUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/r/${rawSlug}`
@@ -106,6 +107,27 @@ export default function RoomPage() {
       connRef.current.send({ type: 'location', location: loc })
     }
   }, [])
+
+  function playNotification() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.frequency.setValueAtTime(660, ctx.currentTime)
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1)
+      gain.gain.setValueAtTime(0.15, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + 0.3)
+    } catch {}
+  }
+
+  const handleChatOpen = () => {
+    setChatOpen(true)
+    setUnreadCount(0)
+  }
 
   const sendChat = useCallback((text) => {
     if (!connRef.current?.open || !text.trim()) return
@@ -155,7 +177,11 @@ export default function RoomPage() {
 
     const handleData = (data) => {
       if (data.type === 'location') setPeerLocation(data.location)
-      else if (data.type === 'chat') setMessages((prev) => [...prev, { ...data, isMe: false }])
+      else if (data.type === 'chat') {
+        setMessages((prev) => [...prev, { ...data, isMe: false }])
+        setUnreadCount((prev) => prev + 1)
+        playNotification()
+      }
     }
 
     const init = () => {
@@ -294,10 +320,19 @@ export default function RoomPage() {
       </div>
 
       <button
-        onClick={() => setChatOpen(!chatOpen)}
-        className="absolute bottom-28 right-4 z-[10000] bg-white/90 backdrop-blur-md rounded-full w-12 h-12 shadow-xl flex items-center justify-center text-xl hover:bg-white transition border border-white/50"
+        onClick={handleChatOpen}
+        className={`absolute bottom-28 right-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-xl transition border-2 ${
+          unreadCount > 0
+            ? 'bg-rose-500 border-rose-400 animate-pulse shadow-rose-400/50'
+            : 'bg-white/90 backdrop-blur-md border-white/50 hover:bg-white'
+        }`}
       >
         💬
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-amber-400 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
       </button>
 
       {/* Chat panel */}

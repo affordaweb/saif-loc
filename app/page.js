@@ -40,7 +40,7 @@ export default function Home() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-white/70 backdrop-blur rounded-3xl mb-6 shadow-sm">
             <span className="text-4xl">📍</span>
           </div>
-          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">Saif Loc</h1>
+          <h1 className="text-4xl font-bold text-gray-800 tracking-tight">Share Loc</h1>
           <p className="text-gray-500 mt-2 text-sm">Real-time location sharing</p>
         </div>
 

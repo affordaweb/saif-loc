@@ -2,7 +2,7 @@ import './globals.css'
 import 'leaflet/dist/leaflet.css'
 
 export const metadata = {
-  title: 'Saif Loc',
+  title: 'Share Loc',
   description: 'Real-time location sharing',
 }
 
