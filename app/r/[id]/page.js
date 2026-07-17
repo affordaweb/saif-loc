@@ -386,8 +386,8 @@ export default function RoomPage() {
     <div className="h-screen w-full relative bg-black overflow-hidden">
       <MapView
         myLocation={showMe ? myLocation : null}
-        participants={showPeer ? [{ id: 'peer', name: peerName, color: isHost ? '#22c55e' : '#f43f5e', location: peerLocation }] : []}
-        pois={pois} myName={myName} myColor={isHost ? '#f43f5e' : '#22c55e'}
+        participants={showPeer ? [{ id: 'peer', name: peerName, color: isHost ? '#22c55e' : '#f97316', location: peerLocation }] : []}
+        pois={pois} myName={myName} myColor={isHost ? '#f97316' : '#22c55e'}
         trail={showMe ? trail : []} midpoint={(showMe && showPeer) ? midpoint : null}
         meetingPin={meetingPin} destination={destination} onMapClick={handleMapClick}
       />
@@ -420,7 +420,7 @@ export default function RoomPage() {
       </div>
 
       {/* Chat button */}
-      <button onClick={handleChatOpen} className={`absolute bottom-6 right-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-xl transition border-2 ${unreadCount > 0 ? 'bg-rose-500 border-rose-400 animate-pulse shadow-rose-400/50' : 'bg-white/95 backdrop-blur-md border-white/50 hover:bg-white'}`}>
+      <button onClick={handleChatOpen} className={`absolute bottom-6 right-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-xl transition border-2 ${unreadCount > 0 ? 'bg-orange-500 border-orange-400 animate-pulse shadow-orange-400/50' : 'bg-white/95 backdrop-blur-md border-white/50 hover:bg-white'}`}>
         💬
         {unreadCount > 0 && <span className="absolute -top-1 -right-1 bg-amber-400 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">{unreadCount > 9 ? '9+' : unreadCount}</span>}
       </button>
@@ -451,7 +451,7 @@ export default function RoomPage() {
       {showConsent && !consented && (
         <div className="absolute inset-0 z-[20000] bg-black/50 flex items-end md:items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-rose-100 to-purple-100 rounded-2xl mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl mb-4">
               <span className="text-3xl">📍</span>
             </div>
             <h2 className="text-xl font-bold text-gray-800 mb-1">
@@ -467,11 +467,11 @@ export default function RoomPage() {
               <div className="flex gap-1.5">
                 {[{ val: 0, label: '∞' }, { val: 1, label: '1h' }, { val: 8, label: '8h' }, { val: 24, label: '24h' }, { val: 72, label: '3d' }, { val: 168, label: '1w' }].map((opt) => (
                   <button key={opt.val} onClick={() => setSharingDuration(opt.val)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${sharingDuration === opt.val ? 'bg-purple-400 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>{opt.label}</button>
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${sharingDuration === opt.val ? 'bg-orange-400 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>{opt.label}</button>
                 ))}
               </div>
             </div>
-            <button onClick={handleShareLocation} className="w-full bg-gradient-to-r from-rose-400 to-purple-400 hover:from-rose-500 hover:to-purple-500 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg shadow-purple-300/30 mb-2">
+            <button onClick={handleShareLocation} className="w-full bg-gradient-to-r from-orange-400 to-amber-500 hover:from-orange-500 hover:to-amber-600 text-white font-semibold py-3 px-6 rounded-xl transition shadow-lg shadow-amber-300/30 mb-2">
               Share My Location
             </button>
             {peerConsented && (
@@ -504,7 +504,7 @@ export default function RoomPage() {
               {messages.length === 0 && <p className="text-center text-gray-400 text-xs py-8">No messages yet</p>}
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${msg.isMe ? 'bg-gradient-to-r from-rose-400 to-purple-400 text-white rounded-br-md' : 'bg-gray-100 text-gray-700 rounded-bl-md'}`}>
+                  <div className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${msg.isMe ? 'bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-br-md' : 'bg-gray-100 text-gray-700 rounded-bl-md'}`}>
                     {!msg.isMe && <div className="text-[10px] font-semibold text-gray-500 mb-0.5">{msg.name}</div>}
                     {msg.text}
                     {msg.isMe && <span className="text-[10px] ml-1 opacity-70">✓</span>}
@@ -516,9 +516,9 @@ export default function RoomPage() {
             <form onSubmit={(e) => { e.preventDefault(); sendChat(chatInput); sendTyping(false) }} className="flex gap-2">
               <input ref={chatInputRef} type="text" placeholder="Type a message..." value={chatInput}
                 onChange={(e) => handleTyping(e.target.value)} autoFocus
-                className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-300"
               />
-              <button type="submit" className="bg-gradient-to-r from-rose-400 to-purple-400 text-white rounded-full min-w-[44px] min-h-[44px] flex items-center justify-center shadow-md hover:from-rose-500 hover:to-purple-500 transition">➤</button>
+              <button type="submit" className="bg-gradient-to-r from-orange-400 to-amber-500 text-white rounded-full min-w-[44px] min-h-[44px] flex items-center justify-center shadow-md hover:from-orange-500 hover:to-amber-600 transition">➤</button>
             </form>
           </div>
         </div>
@@ -531,7 +531,7 @@ export default function RoomPage() {
             <div className="grid grid-cols-2 gap-2 md:gap-3">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-1.5 mb-0.5">
-                  <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full ${consented ? (isHost ? 'bg-rose-400' : 'bg-emerald-400') : 'bg-gray-300'}`} />
+                  <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full ${consented ? (isHost ? 'bg-orange-400' : 'bg-emerald-400') : 'bg-gray-300'}`} />
                   <span className="text-[10px] text-gray-500 font-semibold tracking-wider uppercase">{isHost ? 'You' : hName}</span>
                 </div>
                 <div className="font-bold text-gray-900 text-base md:text-lg">{hName}</div>
@@ -541,7 +541,7 @@ export default function RoomPage() {
               </div>
               <div className="text-center border-l border-gray-300">
                 <div className="flex items-center justify-center gap-1.5 mb-0.5">
-                  <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full ${peerConsented ? (isHost ? 'bg-emerald-400' : 'bg-rose-400') : 'bg-gray-300'}`} />
+                  <div className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full ${peerConsented ? (isHost ? 'bg-emerald-400' : 'bg-orange-400') : 'bg-gray-300'}`} />
                   <span className="text-[10px] text-gray-500 font-semibold tracking-wider uppercase">{isHost ? fName : 'You'}</span>
                 </div>
                 <div className="font-bold text-gray-900 text-base md:text-lg">{fName}</div>
@@ -578,7 +578,7 @@ export default function RoomPage() {
               <div className="pt-2 md:pt-3 border-t border-gray-300 space-y-1.5">
                 <div className="flex items-center justify-between text-[10px] text-gray-500 font-semibold">
                   <span>🎯 Destination</span>
-                  <button onClick={() => { setDestination(null); setArrived(null); if (connRef.current?.open) connRef.current.send({ type: 'destination', destination: null }) }} className="text-rose-500 hover:text-rose-700 font-semibold">Clear</button>
+                  <button onClick={() => { setDestination(null); setArrived(null); if (connRef.current?.open) connRef.current.send({ type: 'destination', destination: null }) }} className="text-orange-500 hover:text-orange-700 font-semibold">Clear</button>
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <span className="font-bold text-gray-900 text-sm">

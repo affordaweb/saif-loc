@@ -1,5 +1,8 @@
 import './globals.css'
 import 'leaflet/dist/leaflet.css'
+import { Caveat } from 'next/font/google'
+
+const caveat = Caveat({ subsets: ['latin'], variable: '--font-caveat' })
 
 export const metadata = {
   title: 'Share Loc',
@@ -13,15 +16,15 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#a78bfa',
+  themeColor: '#f97316',
 }
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={caveat.variable}>
       <head>
-        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='20' r='12' fill='%23f44336'/%3E%3Cpath d='M32 44 L20 58 L32 50 L44 58 Z' fill='%23f44336'/%3E%3C/svg%3E" />
-        <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='20' r='12' fill='%23f44336'/%3E%3Cpath d='M32 44 L20 58 L32 50 L44 58 Z' fill='%23f44336'/%3E%3C/svg%3E" />
+        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='20' r='12' fill='%23f97316'/%3E%3Cpath d='M32 44 L20 58 L32 50 L44 58 Z' fill='%23f97316'/%3E%3C/svg%3E" />
+        <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='20' r='12' fill='%23f97316'/%3E%3Cpath d='M32 44 L20 58 L32 50 L44 58 Z' fill='%23f97316'/%3E%3C/svg%3E" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
