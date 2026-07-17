@@ -465,7 +465,7 @@ export default function RoomPage() {
             <div className="flex items-center justify-center gap-2 mb-6">
               <span className="text-xs text-gray-400 font-semibold tracking-wider uppercase">Share for</span>
               <div className="flex gap-1.5">
-                {[{ val: 0, label: '∞' }, { val: 1, label: '1h' }, { val: 8, label: '8h' }].map((opt) => (
+                {[{ val: 0, label: '∞' }, { val: 1, label: '1h' }, { val: 8, label: '8h' }, { val: 24, label: '24h' }, { val: 72, label: '3d' }, { val: 168, label: '1w' }].map((opt) => (
                   <button key={opt.val} onClick={() => setSharingDuration(opt.val)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${sharingDuration === opt.val ? 'bg-purple-400 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>{opt.label}</button>
                 ))}
