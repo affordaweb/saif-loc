@@ -420,31 +420,31 @@ export default function RoomPage() {
       </div>
 
       {/* Chat button */}
-      <button onClick={handleChatOpen} className={`absolute bottom-32 md:bottom-8 right-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-xl transition border-2 ${unreadCount > 0 ? 'bg-rose-500 border-rose-400 animate-pulse shadow-rose-400/50' : 'bg-white/95 backdrop-blur-md border-white/50 hover:bg-white'}`}>
+      <button onClick={handleChatOpen} className={`absolute bottom-6 right-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-xl transition border-2 ${unreadCount > 0 ? 'bg-rose-500 border-rose-400 animate-pulse shadow-rose-400/50' : 'bg-white/95 backdrop-blur-md border-white/50 hover:bg-white'}`}>
         💬
         {unreadCount > 0 && <span className="absolute -top-1 -right-1 bg-amber-400 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">{unreadCount > 9 ? '9+' : unreadCount}</span>}
-      </button>
-
-      {/* Destination button */}
-      <button
-        onClick={() => setSetDestMode(!setDestMode)}
-        className={`absolute bottom-48 md:bottom-20 left-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-lg transition border-2 ${
-          setDestMode ? 'bg-emerald-500 border-emerald-400 shadow-emerald-400/50 scale-110' : destination ? 'bg-emerald-100 border-emerald-300' : 'bg-white/95 backdrop-blur-md border-white/50 hover:bg-white'
-        }`}
-        title={setDestMode ? 'Tap the map to set destination' : destination ? 'Destination set' : 'Set destination'}
-      >
-        🎯
       </button>
 
       {/* Drop Pin button */}
       <button
         onClick={() => setDropPinMode(!dropPinMode)}
-        className={`absolute bottom-32 md:bottom-8 left-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-lg transition border-2 ${
+        className={`absolute bottom-6 left-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-lg transition border-2 ${
           dropPinMode ? 'bg-amber-500 border-amber-400 shadow-amber-400/50 scale-110' : 'bg-white/95 backdrop-blur-md border-white/50 hover:bg-white'
         }`}
         title={dropPinMode ? 'Tap the map to place pin' : 'Drop a meeting pin'}
       >
         📍
+      </button>
+
+      {/* Destination button */}
+      <button
+        onClick={() => setSetDestMode(!setDestMode)}
+        className={`absolute bottom-24 left-4 z-[10000] rounded-full w-14 h-14 shadow-xl flex items-center justify-center text-lg transition border-2 ${
+          setDestMode ? 'bg-emerald-500 border-emerald-400 shadow-emerald-400/50 scale-110' : destination ? 'bg-emerald-100 border-emerald-300' : 'bg-white/95 backdrop-blur-md border-white/50 hover:bg-white'
+        }`}
+        title={setDestMode ? 'Tap the map to set destination' : destination ? 'Destination set' : 'Set destination'}
+      >
+        🎯
       </button>
 
       {/* Consent sheet */}

@@ -21,8 +21,8 @@ function poiLabelIcon(type, name) {
 function avatarIcon(name, color) {
   const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color.replace('#', '')}&color=fff&size=80&rounded=true&bold=true`
   return L.divIcon({
-    html: `<div class="marker-pulse" style="width:44px;height:44px;border-radius:50%;border:3px solid white;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,0.4);background:${color};display:flex;align-items:center;justify-content:center;"><img src="${url}" alt="${name}" style="width:44px;height:44px;border-radius:50%;" /></div>`,
-    className: '', iconSize: [44, 44], iconAnchor: [22, 22],
+    html: `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;"><div class="marker-pulse" style="width:44px;height:44px;border-radius:50%;border:3px solid white;overflow:hidden;box-shadow:0 3px 12px rgba(0,0,0,0.4);background:${color};display:flex;align-items:center;justify-content:center;"><img src="${url}" alt="${name}" style="width:44px;height:44px;border-radius:50%;" /></div><span style="background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);color:white;font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px;white-space:nowrap;border:1px solid rgba(255,255,255,0.2);">${name}</span></div>`,
+    className: '', iconSize: [0, 0], iconAnchor: [22, 44],
   })
 }
 
