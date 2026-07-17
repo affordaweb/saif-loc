@@ -1,0 +1,11 @@
+{
+  "name": "saif-loc-server",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "peer": "^1.0.0"
+  }
+}

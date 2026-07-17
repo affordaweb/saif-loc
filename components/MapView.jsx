@@ -13,7 +13,7 @@ const POI_ICONS = {
 function poiLabelIcon(type, name) {
   const emoji = POI_ICONS[type] || POI_ICONS.default
   return L.divIcon({
-    html: `<div style="display:flex;align-items:center;gap:4px;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:3px 10px 3px 6px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;white-space:nowrap;"><span style="font-size:12px;">${emoji}</span><span style="color:white;font-size:10px;font-weight:500;">${name}</span></div>`,
+    html: `<div style="display:flex;align-items:center;gap:4px;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:3px 10px 3px 6px;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;white-space:nowrap;"><span style="font-size:12px;">${emoji}</span><span style="color:#fff;font-size:10px;font-weight:600;">${name}</span></div>`,
     className: '', iconSize: [0, 0], iconAnchor: [0, 0],
   })
 }
@@ -42,7 +42,7 @@ function meetingPinIcon(emoji = '📍') {
 
 export default function MapView({
   myLocation, participants = [], pois, myName, myColor,
-  trail, midpoint, meetingPin, onMapClick,
+  trail, midpoint,   meetingPin, destination, onMapClick,
 }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
@@ -55,14 +55,18 @@ export default function MapView({
   const trailRef = useRef(null)
   const midpointRef = useRef(null)
   const meetingPinRef = useRef(null)
+  const destRef = useRef(null)
   const clickHandlerRef = useRef(null)
   const styleRef = useRef(null)
 
   useEffect(() => {
     if (initializedRef.current) return
     initializedRef.current = true
-    const map = L.map(containerRef.current, { zoomControl: false, attributionControl: false }).setView([20, 0], 2)
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map)
+    const map = L.map(containerRef.current, { zoomControl: false, attributionControl: false, maxZoom: 21 }).setView([20, 0], 2)
+    // Google satellite (hybrid: imagery + road/place labels) — zooms to 21, much deeper than Esri's 19.
+    L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+      subdomains: ['0', '1', '2', '3'], maxZoom: 21, maxNativeZoom: 21,
+    }).addTo(map)
     map.on('click', (e) => clickHandlerRef.current?.(e.latlng))
     mapRef.current = map
     map.invalidateSize()
@@ -172,6 +176,20 @@ export default function MapView({
     if (meetingPinRef.current) { map.removeLayer(meetingPinRef.current); meetingPinRef.current = null }
     if (meetingPin) meetingPinRef.current = L.marker([meetingPin.lat, meetingPin.lng], { icon: meetingPinIcon(), zIndexOffset: 1100 }).addTo(map).bindPopup('📍 Meeting spot')
   }, [meetingPin])
+
+  // Destination marker
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    if (destRef.current) { map.removeLayer(destRef.current); destRef.current = null }
+    if (destination) destRef.current = L.marker([destination.lat, destination.lng], {
+      icon: L.divIcon({
+        html: `<div style="width:36px;height:36px;background:#10b981;border:3px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 12px rgba(16,185,129,0.5);">🎯</div>`,
+        className: '', iconSize: [36, 36], iconAnchor: [18, 18],
+      }),
+      zIndexOffset: 1100,
+    }).addTo(map).bindPopup('🎯 Destination')
+  }, [destination])
 
   return <div ref={containerRef} className="w-full h-full" />
 }
